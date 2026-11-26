@@ -1,33 +1,12 @@
 ---
-import { tagsOnly } from '../utils/common';
-
-const { frontmatter } = Astro.props;
-const title = frontmatter?.title || Astro.props.title;
-const propTags = frontmatter?.tags || Astro.props.tags || [];
-const meta = frontmatter?.meta || Astro.props.meta || [];
-
-const baseTags = [
-  'abu lujayn',
-  'abulujayn',
-  'abū lujayn al-kawnkanī',
-  'abū lujayn',
-  'al-kawnkanī',
-  'blog',
-  'nocss',
-  'no css',
-  'nojs',
-  'no js',
-  'simple',
-  'minimal',
-];
-const postTags = tagsOnly(propTags);
-// Combine and unique
-const allTags = [...new Set([...baseTags, ...postTags, ...meta])];
-const keywords = allTags.join(', ');
-
-const pageTitle = 'abū lujayn' + title
-  ? ` | ${title}`
-  : ``;
+import '../styles/site.css';
+const { frontmatter, title, description } = Astro.props;
+const pageTitle = title ?? frontmatter?.title;
+const summary =
+  description ??
+  frontmatter?.description ??
+  'A workshop notebook about small tools, odd hardware, and the things they teach me.';
+const segment = Astro.url.pathname.split('/')[1];
 ---
 
 <!doctype html>
@@ -35,22 +14,44 @@ const pageTitle = 'abū lujayn' + title
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" href="data:," />
-    <title>{pageTitle}</title>
-    <meta name="description" content="abū lujayn al-kawnkanī" />
-    <meta name="author" content="abulujayn" />
-    <meta name="keywords" content={keywords} />
+    <meta name="description" content={summary} />
+    <meta name="author" content="Hydro" />
+    <meta
+      name="theme-color"
+      content="#f6f5ed"
+      media="(prefers-color-scheme: light)"
+    />
+    <meta
+      name="theme-color"
+      content="#111918"
+      media="(prefers-color-scheme: dark)"
+    />
+    <link rel="icon" type="image/svg+xml" href="/hydro.svg" />
+    <title>{pageTitle ? `${pageTitle} · Hydro Log` : 'Hydro Log'}</title>
   </head>
   <body>
-    <h1>abū lujayn</h1>
-    <div>
-      <a href="/">home</a>
-      -
-      <a href="/posts">posts</a>
-      -
-      <a href="/projects">projects</a>
-    </div>
-    <hr />
-    <slot />
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="site-header">
+      <a class="wordmark" href="/" aria-label="Hydro Log home">
+        <img src="/hydro.svg" alt="" width="24" height="24" /> Hydro Log
+      </a>
+      <nav aria-label="Main">
+        <a
+          href="/posts/"
+          aria-current={segment === 'posts' || segment === 'post'
+            ? 'true'
+            : undefined}>Posts</a
+        >
+        <a
+          href="/about/"
+          aria-current={segment === 'about' ? 'page' : undefined}>About</a
+        >
+      </nav>
+    </header>
+    <main id="main"><slot /></main>
+    <footer class="site-footer">
+      <span>Built to be read.</span>
+      <a href="https://github.com/hydrozerv">Hydro on GitHub</a>
+    </footer>
   </body>
 </html>

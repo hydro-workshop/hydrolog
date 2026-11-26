@@ -1,47 +1,26 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getCollection } from 'astro:content';
-import { tagsOnly, formatDate, formatHijri } from '../../utils/common';
-import slugify from 'slugify';
-
+import PostList from '../../components/PostList.astro';
+import { publishedPosts, tagsFor, tagSlug } from '../../utils/common';
 export async function getStaticPaths() {
-  const posts = await getCollection('post');
-  const visiblePosts = posts.filter(
-    (post: any) => post.data.public !== false && post.data.archived !== true,
-  );
-  const allTags = visiblePosts.flatMap((post: any) => post.data.tags || []);
-  const uniqueTags = [...new Set(tagsOnly(allTags))];
-
-  return uniqueTags.map((tag: any) => {
-    const filteredPosts = visiblePosts.filter((post: any) =>
-      (post.data.tags || []).includes(tag),
+  const posts = await publishedPosts();
+  const tags = tagsFor(posts);
+  const slugs = tags.map(tagSlug);
+  if (slugs.some((slug) => !slug) || new Set(slugs).size !== slugs.length) {
+    throw new Error(
+      'Published post tags must produce unique, non-empty URL slugs.',
     );
-    return {
-      params: { tag: slugify(tag as string, { lower: true }) },
-      props: { tag, posts: filteredPosts },
-    };
-  });
+  }
+  return tags.map((tag) => ({
+    params: { tag: tagSlug(tag) },
+    props: { tag, posts: posts.filter((post) => post.data.tags.includes(tag)) },
+  }));
 }
-
 const { tag, posts } = Astro.props;
-const sortedPosts = posts
-  .sort((a: any, b: any) => b.data.date.valueOf() - a.data.date.valueOf());
 ---
 
-<BaseLayout title={`#${tag} posts`}>
-  <h2>Posts tagged #{tag}</h2>
-  <a href="/posts/">All posts</a>
-  <ul>
-    {
-      sortedPosts.map((post: any) => (
-        <li>
-          <span title={formatDate(post.data.date)}>
-            {formatHijri(post.data.date, post.data.date_shift)}
-          </span>
-          {' - '}
-          <a href={`/post/${post.slug}/`}>{post.data.title}</a>
-        </li>
-      ))
-    }
-  </ul>
+<BaseLayout title={`#${tag}`}>
+  <a class="back" href="/posts/">← All posts</a>
+  <h1>#{tag}</h1>
+  <PostList {posts} />
 </BaseLayout>

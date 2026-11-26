@@ -1,30 +1,25 @@
-import moment from 'moment-hijri';
+import { getCollection, type CollectionEntry } from 'astro:content';
+import slugify from 'slugify';
 
-moment.locale('en-us');
+export const dateLabel = (date: Date) => date.toISOString().slice(0, 10);
+export const tagSlug = (tag: string) =>
+  slugify(tag, { lower: true, strict: true });
 
-export function formatDate(rawDate: Date): string {
-  const date = moment(rawDate);
-  const year = date.year();
-  const month = date.month() + 1;
-  const day = date.date();
-  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+export async function publishedPosts(archived = false) {
+  const posts = await getCollection(
+    'post',
+    ({ data }) => data.public && data.archived === archived,
+  );
+  return posts.sort(
+    (a, b) =>
+      b.data.date.valueOf() - a.data.date.valueOf() || a.id.localeCompare(b.id),
+  );
 }
 
-export function formatHijri(rawDate: Date, date_shift?: number): string {
-  const date = moment(rawDate);
-  if (date_shift) {
-    date.add(date_shift, 'iDate');
-  }
-  const year = date.iYear();
-  const month = date.iMonth() + 1;
-  const day = date.iDate();
-  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+export function postUrl(post: CollectionEntry<'post'>) {
+  return `/${post.data.archived ? 'archive' : 'post'}/${post.id}/`;
 }
 
-export function filterTags(tags?: string[]): string[] {
-  return (tags || []).filter((tag) => !['posts', 'dunyā', 'dīn'].includes(tag));
-}
-
-export function tagsOnly(tags?: string[]): string[] {
-  return (tags || []).filter((tag) => !['posts', 'all'].includes(tag));
+export function tagsFor(posts: CollectionEntry<'post'>[]) {
+  return [...new Set(posts.flatMap(({ data }) => data.tags))].sort();
 }

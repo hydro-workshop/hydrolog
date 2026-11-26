@@ -1,58 +1,21 @@
-# abulujayn.com
+# Hydro Log
 
-A simple personal website and blog built with [Astro](https://astro.build/).
+A small workshop notebook by Hydro. Astro builds a plain, static site from Markdown and MDX. No account, database, analytics, or client-side JavaScript is needed.
 
-The site keeps things intentionally plain: Markdown and MDX content, minimal layout, no client-side JavaScript by default, and a small set of pages for posts, projects, and archives.
+## Preview and publish
 
-## Getting Started
-
-Install dependencies:
+Use Node 22 (version 22.12 or later):
 
 ```sh
-npm install
-```
-
-Start the development server:
-
-```sh
+npm ci
 npm run dev
-```
-
-Build the site:
-
-```sh
+npm run lint
 npm run build
-```
-
-Preview the production build:
-
-```sh
 npm run preview
 ```
 
-## Scripts
+Write a post in `src/content/post/<url-slug>/index.mdx` (or `index.md`). The frontmatter needs `title`, `description`, and `date` (`YYYY-MM-DD`); `tags` is optional. Preview locally, then commit and push. `public: false` keeps a post out of the built site, but does **not** make it private in Git. Keep unpublished private material outside this repo. Use `archived: true` to move a public post to the archive rather than the main list.
 
-- `npm run dev` starts the Astro development server.
-- `npm run build` creates a production build in `dist/`.
-- `npm run preview` serves the production build locally.
-- `npm run lint` runs Astro checks.
-- `npm run format` formats the project with Prettier.
+## Hosting
 
-## Project Structure
-
-```text
-src/
-  components/      Reusable Astro components
-  content/post/    Blog posts written in MDX
-  layouts/         Page and post layouts
-  pages/           Site routes
-  utils/           Shared helpers
-```
-
-## Writing Posts
-
-Posts live in `src/content/post/`. Each post has its own folder with an `index.mdx` file.
-
-## Deployment
-
-The project is configured for Vercel through the Astro Vercel adapter.
+On Vercel, import this repository and choose the **Astro** framework preset. Use Node 22, `npm run build` and output directory `dist`. No environment variables or server adapter are required. Connect a domain separately. Any static host that serves directory indexes at the domain root also works.

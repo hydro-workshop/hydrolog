@@ -1,33 +1,17 @@
 ---
-import { getEntry } from 'astro:content';
+import { render } from 'astro:content';
 import PostLayout from '../../layouts/PostLayout.astro';
+import { publishedPosts } from '../../utils/common';
 
-export const prerender = false;
-
-const { slug } = Astro.params;
-const entry = await getEntry('post', slug!);
-
-if (!entry) {
-  return Astro.redirect('/404');
+export async function getStaticPaths() {
+  return (await publishedPosts()).map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
 }
 
-if (entry.data.archived === true) {
-  return Astro.redirect(`/archive/${entry.slug}/`);
-}
-
-const { Content } = await entry.render();
-
-import Salawat from '../../components/Salawat.astro';
-import GregDate from '../../components/GregDate.astro';
-import HijriDate from '../../components/HijriDate.astro';
-
-const components = {
-  Salawat,
-  HijriDate,
-  GregDate,
-};
+const { entry } = Astro.props;
+const { Content } = await render(entry);
 ---
 
-<PostLayout {...entry.data}>
-  <Content components={components} />
-</PostLayout>
+<PostLayout {...entry.data}><Content /></PostLayout>

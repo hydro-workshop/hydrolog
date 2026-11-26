@@ -1,37 +1,28 @@
 ---
 import BaseLayout from './BaseLayout.astro';
-import { filterTags, formatDate, formatHijri } from '../utils/common';
-import slugify from 'slugify';
-
-const { title, tags, date, date_shift, meta, archived } = Astro.props;
-const filteredTags = filterTags(tags);
-const publishedTitle = formatDate(date);
-const publishedDate = formatHijri(date, date_shift);
+import { dateLabel, tagSlug } from '../utils/common';
+const { title, description, tags, date, archived } = Astro.props;
 ---
 
-<BaseLayout title={title} tags={tags} meta={meta}>
-  {
-    archived === true && (
-      <h3>
-        <em>This post has been archived.</em>
-      </h3>
-    )
-  }
-  <h2>{title}</h2>
-
-  <slot />
-
-  {
-    filteredTags.length > 0 && (
-      <Fragment>
-        {filteredTags
-          .map((tag: string) => (
-            <a href={`/posts/${slugify(tag, { lower: true })}/`}>#{tag}</a>
-          ))
-          .reduce((prev: any, curr: any) => [prev, ' ', curr])}
-      </Fragment>
-    )
-  }
-  <hr />
-  <em>published <span title={publishedTitle}>{publishedDate}</span></em>
+<BaseLayout {title} {description}>
+  <a class="back" href={archived ? '/archive/' : '/posts/'}
+    >← {archived ? 'Archive' : 'All posts'}</a
+  >
+  <article>
+    <header>
+      <h1>{title}</h1>
+      <time datetime={dateLabel(date)}>{dateLabel(date)}</time>
+      {archived && <p class="archive-note">Archived post</p>}
+    </header>
+    <slot />
+    {
+      !archived && tags.length > 0 && (
+        <footer class="tags" aria-label="Tags">
+          {tags.map((tag: string) => (
+            <a href={`/posts/${tagSlug(tag)}/`}>#{tag}</a>
+          ))}
+        </footer>
+      )
+    }
+  </article>
 </BaseLayout>

@@ -1,0 +1,22 @@
+---
+title: 'The screen was upside down. The joystick was not.'
+description: 'A Raspberry Pi dashboard, an unnecessary direction swap, and a better way to test a physical interface.'
+date: 2026-11-26
+tags: [hardware, debugging]
+---
+
+On a tiny Raspberry Pi OLED, I managed to make down mean up while trying to make the interface easier to use. The worst part is that my change made perfect sense in the code.
+
+I’d built a small dashboard for a Raspberry Pi 4 with a Waveshare OLED HAT. It shows four things: uptime, CPU temperature, memory and disk usage. A little five-way joystick steps between pages. If the screen sits idle for a minute, it turns off. The first press wakes it without changing pages, because I want to see what I left on the screen before asking for something else.
+
+The board needed to be mounted the other way up, so I rotated the output by 180 degrees. I then added a second change: swap up with down and left with right. The pixel change was right. The input change was wrong.
+
+## My test agreed with me
+
+The easy test was to feed the program a direction and check that it returned the opposite one when the screen was rotated. That proved the code did what I’d written. It couldn’t tell me whether the direction arriving at the program needed to be changed in the first place.
+
+A temporary key tester made the difference visible. The three numbered buttons were fine; it was the joystick that felt upside down. The direction already matched the way the board was being viewed before my extra swap. The fix was to delete the swap and leave the screen rotation alone.
+
+If I were building it again, I’d start with the check you can do while holding the thing. Wake the screen. Start at UPTIME. Press down and check for CPU TEMP. Press up and check that you’re back. Do the same for left and right. Four presses, no theory required.
+
+I still like software tests. I just don’t want to ask one to tell me which way a person is holding a Raspberry Pi.

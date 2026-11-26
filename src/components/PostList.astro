@@ -1,0 +1,26 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { dateLabel, postUrl } from '../utils/common';
+interface Props {
+  posts: CollectionEntry<'post'>[];
+}
+const { posts } = Astro.props;
+---
+
+{
+  posts.length ? (
+    <ul class="entries">
+      {posts.map((post) => (
+        <li>
+          <time datetime={dateLabel(post.data.date)}>
+            {dateLabel(post.data.date)}
+          </time>
+          <a href={postUrl(post)}>{post.data.title}</a>
+          <p>{post.data.description}</p>
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <p>No posts here yet.</p>
+  )
+}

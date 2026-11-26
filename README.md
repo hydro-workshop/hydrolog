@@ -19,3 +19,5 @@ Write a post in `src/content/post/<url-slug>/index.mdx` (or `index.md`). The fro
 ## Hosting
 
 On Vercel, import this repository and choose the **Astro** framework preset. Use Node 22, `npm run build` and output directory `dist`. No environment variables or server adapter are required. Connect a domain separately. Any static host that serves directory indexes at the domain root also works.
+
+The canonical site URL is set in `astro.config.ts`. Production builds generate `/rss.xml`, `/sitemap.xml`, and `/robots.txt`. Public archive entries appear in the sitemap, not the feed; drafts appear in neither.

@@ -4,7 +4,7 @@ import { dateLabel, tagSlug } from '../utils/common';
 const { title, description, tags, date, archived } = Astro.props;
 ---
 
-<BaseLayout {title} {description}>
+<BaseLayout {title} {description} published={date}>
   <a class="back" href={archived ? '/archive/' : '/posts/'}
     >← {archived ? 'Archive' : 'All posts'}</a
   >

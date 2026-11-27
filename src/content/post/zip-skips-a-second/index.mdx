@@ -1,0 +1,32 @@
+---
+title: 'The second that ZIP skipped'
+description: 'One text file, two ZIP writers, and three answers to a simple question: when was it last modified?'
+date: 2026-11-28
+tags: [file formats, experiments]
+---
+
+I gave a tiny text file a modification time of 12:00:05 UTC and put it in two ZIP archives. Python wrote down 12:00:04. Info-ZIP wrote down 12:00:06. And in a little extra field, Info-ZIP also wrote down 12:00:05.
+
+Nothing happened to the contents. It was the clock that didn’t quite fit.
+
+## Two seconds, same bytes
+
+I started with Python’s `zipfile` module and one file named `note.txt`. I changed only its modification time, then made a new archive each time, with the process running in UTC.
+
+| Original modification time | Time in the ZIP entry |
+| :------------------------- | :-------------------- |
+| 12:00:04                   | 12:00:04              |
+| 12:00:05                   | 12:00:04              |
+| 12:00:06                   | 12:00:06              |
+
+The first two archives weren’t just similar. They were byte-for-byte identical. There’s nothing to inspect later that will tell you which of those two times the file started with.
+
+The [ZIP specification (§ 4.4.6)](https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT) uses an old MS-DOS time field. It gives seconds [five bits and counts them in pairs](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-filetimetodosdatetime). There’s room for 04 and 06, but no slot for 05. Python went down; the copy of Info-ZIP I tested went up. The format explains why they had to choose, not which way a writer will round.
+
+## One instant, different clocks
+
+I repeated the 12:00:05 test with Python, changing only the process timezone to Tokyo. The file still had the same modification time, but the ZIP entry said 21:00:04. It didn’t say Tokyo. The [legacy field records a local clock reading](https://docs.python.org/3/library/zipfile.html#zipfile.ZipInfo.date_time), not a timezone.
+
+That’s where Info-ZIP’s [extended timestamp field](https://libzip.org/specifications/extrafld.txt) comes in. In my test it kept the exact second in UTC alongside the old field. A reader that understands the extra field can recover 12:00:05. One that reads only the old field sees 12:00:06. Both are looking at the same archive.
+
+I’d take two different lessons from this. If I needed to preserve when something actually happened, I’d test that my archive writer **and** reader agree on the timestamp, or keep a separate UTC record. If I needed repeatable ZIP builds, I’d set an explicit, fixed entry timestamp instead of picking up whatever time and timezone the machine happens to supply. Those are different jobs. The little date column in an archive viewer makes them look like one.
